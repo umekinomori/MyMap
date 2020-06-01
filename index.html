@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>My Map</title>
+  <style>
+    #target {
+      width: 550px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+  <input type="text" id="keyword">
+  <button id="search">Search</button>
+  <div id="target"></div>
+  <script src="https://maps.googleapis.com/maps/api/js?language=ja&region=JP&key=AIzaSyC6l4rPNeXKLKdq2WuFV6EgTc4IsSwIjmc&callback=initMap&libraries=places" async defer></script>
+  <script>
+    function initMap() {
+      'use strict';
+
+      var target = document.getElementById('target');
+      var geocoder = new google.maps.Geocoder();
+      var map;
+      var tokyo = {lat: 35.681167, lng: 139.767052};
+      var service;
+
+      map = new google.maps.Map(target, {
+        center: {
+          lat: 35.681167,
+          lng: 139.767052
+        },
+        zoom: 15
+      });
+
+      map.addListener('click', function(e) {
+        geocoder.geocode({
+          location: e.latLng
+        }, function(results, status) {
+          if (status !== 'OK') {
+            alert('Failed: ' + status);
+            return;
+          }
+          if (results[0]) {
+            new google.maps.Marker({
+              position: e.latLng,
+              map: map,
+              title: results[0].formatted_address,
+              animation: google.maps.Animation.DROP
+            });
+          } else {
+            alert('No results found');
+            return;
+          }
+        });
+      });
+
+      
+
+      document.getElementById('search').addEventListener('click', function() {
+        service = new google.maps.places.PlacesService(map);
+        service.nearbySearch({
+          location: tokyo,
+          radius: '500',
+          name: document.getElementById('keyword').value
+        }, function(results, status) {
+          var i;
+          if (status === google.maps.places.PlacesServiceStatus.OK) {
+            for (i = 0; i < results.length; i++) {
+              new google.maps.Marker({
+                map: map,
+                position: results[i].geometry.location,
+                title: results[i].name
+              });
+            }
+          } else {
+            alert('Failed: ' + status);
+            return;
+          }
+        });
+      });
+
+    }
+  </script>
+</body>
+</html>
